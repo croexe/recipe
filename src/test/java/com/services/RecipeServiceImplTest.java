@@ -26,6 +26,8 @@ public class RecipeServiceImplTest {
         recipeService = new RecipeServiceImpl(recipeRepository);
     }
 
+
+
     @Test
     public void getRecipes() throws Exception{
 
