@@ -78,15 +78,26 @@ private final IngredientCommandToIngredient ingredientCommandToIngredient;
                         .findById(command.getUom().getId())
                         .orElseThrow(() -> new RuntimeException("UOM NOT FOUND")));
             } else {
-                recipe.addIngredient(ingredientCommandToIngredient.convert(command));
+               Ingredient ingredient= ingredientCommandToIngredient.convert(command);
+               ingredient.setRecipe(recipe);
+               recipe.addIngredient(ingredient);
             }
             //add new Ingredient
             Recipe savedRecipe = recipeRepository.save(recipe);
 
-            return ingredientToIngredientCommand.convert(savedRecipe.getIngredients().stream()
+            Optional<Ingredient> savedIngredientOptional = savedRecipe.getIngredients().stream()
                     .filter(recipeIngredients -> recipeIngredients.getId().equals(command.getId()))
-                    .findFirst()
-                    .get());
+                    .findFirst();
+
+            if(!savedIngredientOptional.isPresent()){
+                savedIngredientOptional = savedRecipe.getIngredients().stream()
+                        .filter(recipeIngredients -> recipeIngredients.getDescription().equals(command.getDescription()))
+                        .filter(recipeIngredients -> recipeIngredients.getAmount().equals(command.getAmount()))
+                        .filter(recipeIngredients -> recipeIngredients.getUom().getId().equals(command.getUom().getId()))
+                        .findFirst();
+            }
+            return ingredientToIngredientCommand.convert(savedIngredientOptional.get());
+
         }
 
     }
